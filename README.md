@@ -1,6 +1,5 @@
 - 👋 Hi, I’m @KazumiGoodProject
 - 👀 I’m interested in web3 dapps
-- 🌱 I’m currently learning Rust/React/Python
 - 💞️ I’m looking to collaborate on Dapps!
 - 📫 How to reach me KazumiDapp@gmail.com or http://www.goodproject.baby
 
