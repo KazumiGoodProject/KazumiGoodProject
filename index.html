@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rotating Letters</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #clock {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 72px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5),
+                         0 0 40px rgba(255, 255, 255, 0.3);
+            z-index: 100;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="clock">00:00:00</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Clock functionality
+        let startTime = Date.now();
+
+        function updateClock() {
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+
+            const timeString =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+
+            document.getElementById('clock').textContent = timeString;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0xff00ff, 1, 100);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0x00ffff, 1, 100);
+        pointLight2.position.set(-10, -10, 10);
+        scene.add(pointLight2);
+
+        // Create 3D text
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', function(font) {
+            const textGeometry = new THREE.TextGeometry('KISS MY ASS', {
+                font: font,
+                size: 2,
+                height: 0.5,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.1,
+                bevelSize: 0.05,
+                bevelSegments: 5
+            });
+
+            textGeometry.center();
+
+            const materials = [
+                new THREE.MeshPhongMaterial({ color: 0xff00ff, shininess: 100 }), // front
+                new THREE.MeshPhongMaterial({ color: 0x00ffff, shininess: 100 })  // side
+            ];
+
+            const textMesh = new THREE.Mesh(textGeometry, materials);
+            scene.add(textMesh);
+
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+
+                textMesh.rotation.x += 0.005;
+                textMesh.rotation.y += 0.01;
+                textMesh.rotation.z += 0.003;
+
+                // Animate lights
+                const time = Date.now() * 0.001;
+                pointLight1.position.x = Math.sin(time) * 10;
+                pointLight1.position.z = Math.cos(time) * 10;
+                pointLight2.position.x = Math.cos(time) * 10;
+                pointLight2.position.z = Math.sin(time) * 10;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+        });
+
+        camera.position.z = 15;
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
